@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Host: 127.0.0.1
--- Generation Time: Jul 14, 2025 at 07:05 PM
+-- Generation Time: Jul 23, 2025 at 06:27 PM
 -- Server version: 10.4.32-MariaDB
 -- PHP Version: 8.2.12
 
@@ -43,11 +43,13 @@ CREATE TABLE `inventory` (
 
 INSERT INTO `inventory` (`id`, `product_name`, `category`, `quantity`, `updated_at`, `selling_price`, `ordering_price`) VALUES
 (6, 'Golf Shirt', 'Clothes', 17, '2025-07-13 18:09:27', 40000.00, 20000.00),
-(7, 'Casio Gold', 'Watch', 10, '2025-07-13 18:00:17', 65000.00, 40000.00),
+(7, 'Casio Gold', 'Watch', 7, '2025-07-16 14:40:59', 65000.00, 40000.00),
 (8, 'Mens blue suit size 23', 'Suits', 3, '2025-07-12 18:22:17', 250000.00, 180000.00),
 (9, 'Mens blue suit size 23', 'Suits', 8, '2025-07-12 18:20:09', 260000.00, 180000.00),
 (10, 'Casio Black', 'Watch', 6, '2025-07-13 17:34:28', 85000.00, 40000.00),
-(11, 'Jordan 23', 'shoes', 18, '2025-07-13 18:08:04', 200000.00, 160000.00);
+(11, 'Jordan 23', 'shoes', 18, '2025-07-13 18:08:04', 200000.00, 160000.00),
+(13, 'Gucci Handbag', 'Bag', 5, '2025-07-21 15:02:24', 60000.00, 24000.00),
+(14, 'Yeezy Slides', 'Shoes', 15, '2025-07-20 13:12:40', 35000.00, 80000.00);
 
 -- --------------------------------------------------------
 
@@ -91,7 +93,9 @@ INSERT INTO `sales` (`id`, `product_id`, `user_id`, `sale_date`, `total_amount`,
 (5, 6, NULL, '2025-07-12 18:43:36', 300.00, '2025-07-12 18:43:36', 1),
 (6, 10, NULL, '2025-07-13 14:35:42', 210000.00, '2025-07-13 14:35:42', 1),
 (7, 6, NULL, '2025-07-13 17:27:46', 60.00, '2025-07-13 17:27:46', 2),
-(8, 10, NULL, '2025-07-13 17:34:28', 40000.00, '2025-07-13 17:34:28', 1);
+(8, 10, NULL, '2025-07-13 17:34:28', 40000.00, '2025-07-13 17:34:28', 1),
+(9, 7, NULL, '2025-07-16 14:40:59', 150000.00, '2025-07-16 14:40:59', 3),
+(10, 13, NULL, '2025-07-21 15:02:24', 201000.00, '2025-07-21 15:02:24', 3);
 
 -- --------------------------------------------------------
 
@@ -116,11 +120,19 @@ CREATE TABLE `sales_items` (
 CREATE TABLE `users` (
   `id` int(11) NOT NULL,
   `name` varchar(100) NOT NULL,
-  `role` varchar(50) DEFAULT NULL,
+  `role` enum('boss','shopkeeper') NOT NULL,
   `email` varchar(100) DEFAULT NULL,
   `password_hash` varchar(255) DEFAULT NULL,
   `created_at` timestamp NOT NULL DEFAULT current_timestamp()
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
+--
+-- Dumping data for table `users`
+--
+
+INSERT INTO `users` (`id`, `name`, `role`, `email`, `password_hash`, `created_at`) VALUES
+(3, 'Maurice Molande', 'boss', 'molande.mau@gmail.com', '$2y$10$0cj.gAfbM5IEdxpG0TpgE.YlWpUK/hkH/iu/vTsJmZo0Q38AFM03W', '2025-07-20 05:48:24'),
+(4, 'Nohata Molande', 'shopkeeper', 'nohatamolande@gmail.com', '$2y$10$nSuksHzr4we1upIas9OBmeGN27iqryfKLn/6/r2q749hBWVwxHMFm', '2025-07-20 05:58:32');
 
 --
 -- Indexes for dumped tables
@@ -170,7 +182,7 @@ ALTER TABLE `users`
 -- AUTO_INCREMENT for table `inventory`
 --
 ALTER TABLE `inventory`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=13;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=15;
 
 --
 -- AUTO_INCREMENT for table `records`
@@ -182,7 +194,7 @@ ALTER TABLE `records`
 -- AUTO_INCREMENT for table `sales`
 --
 ALTER TABLE `sales`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=9;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=11;
 
 --
 -- AUTO_INCREMENT for table `sales_items`
@@ -194,7 +206,7 @@ ALTER TABLE `sales_items`
 -- AUTO_INCREMENT for table `users`
 --
 ALTER TABLE `users`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=5;
 
 --
 -- Constraints for dumped tables
