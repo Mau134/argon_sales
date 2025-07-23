@@ -1,10 +1,10 @@
 <?php
 // db.php
 
-$host = 'localhost';       // Usually localhost for local servers
-$user = 'root';            // Default for XAMPP/WAMP
-$password = '';            // Default is empty unless you set one
-$database = 'argonsales'; // Replace with your actual database name
+$host = 'mysql.hostinger.com';       // Usually localhost for local servers
+$user = 'u852669780_argonsales';            // Default for XAMPP/WAMP
+$password = '1973@Box2';            // Default is empty unless you set one
+$database = 'u852669780_argonsales'; // Replace with your actual database name
 
 // Create connection
 $conn = new mysqli($host, $user, $password, $database);
