@@ -270,6 +270,8 @@ $conn->close();
       </div>
      </div>
     </div>
+
+
         <div class="col-lg-5">
           
           <div class="card card-carousel overflow-hidden h-100 p-0">
@@ -290,6 +292,30 @@ $conn->close();
           </div>
         </div>
       </div>
+<!-- Download Sales Data Section -->
+<div class="card mb-4">
+  <div class="card-header pb-0 d-flex justify-content-between align-items-center">
+    <h6>📄 Download Sales Data</h6>
+  </div>
+  <div class="card-body">
+  <form method="POST" action="actions/download_sales.php">
+    <div class="row">
+      <div class="col-md-4">
+        <label for="from_date" class="form-label">From:</label>
+        <input type="date" class="form-control" name="from_date" required>
+      </div>
+      <div class="col-md-4">
+        <label for="to_date" class="form-label">To:</label>
+        <input type="date" class="form-control" name="to_date" required>
+      </div>
+      <div class="col-md-4 d-flex align-items-end">
+        <button type="submit" class="btn btn-success w-100">Download Sales Report</button>
+      </div>
+    </div>
+  </form>
+  </div>
+</div>
+
       <div class="container-fluid py-4">
         <div class="row">
           <div class="col-12">
