@@ -73,6 +73,7 @@ $totalPages = ceil($totalItems / $limit);
   <script src="https://kit.fontawesome.com/42d5adcbca.js" crossorigin="anonymous"></script>
   <!-- CSS Files -->
   <link id="pagestyle" href="../assets/css/argon-dashboard.css?v=2.1.0" rel="stylesheet" />
+  
 </head>
 
 <body class="g-sidenav-show   bg-gray-100">
@@ -192,15 +193,8 @@ $totalPages = ceil($totalItems / $limit);
     <div class="col-12">
       <div class="card mb-4">
         <div class="card-header d-flex justify-content-between align-items-center pb-0">
+          
           <h6>Inventory List</h6>
-          <form class="d-flex" method="GET">
-            <input type="date" name="from" class="form-control form-control-sm me-2" value="<?= htmlspecialchars($from) ?>">
-            <input type="date" name="to" class="form-control form-control-sm me-2" value="<?= htmlspecialchars($to) ?>">
-            <button class="btn btn-sm btn-primary me-2" type="submit">Filter</button>
-            <?php if ($from && $to): ?>
-              <a href="../actions/download_inventory.php?from=<?= $from ?>&to=<?= $to ?>" class="btn btn-sm btn-success">Download CSV</a>
-            <?php endif; ?>
-          </form>
         </div>
         <div class="card-body px-0 pt-0 pb-2">
           <div class="table-responsive p-4" style="overflow-x: auto;">
@@ -213,49 +207,92 @@ $totalPages = ceil($totalItems / $limit);
                   <th>Selling Price</th>
                   <th>Ordering Price</th>
                   <th>Updated At</th>
-                  <th>Remove Stock</th>
+                  <th>Update Stock</th>
                 </tr>
               </thead>
               <tbody>
-                <?php if ($result->num_rows > 0): ?>
-                  <?php while($row = $result->fetch_assoc()): ?>
-                    <tr>
-                      <form action="update_inventory.php" method="POST" class="align-middle">
-                        <input type="hidden" name="product_id" value="<?= $row['id'] ?>">
-                        <td>
-                          <input type="text" name="product_name" class="form-control form-control-sm" value="<?= htmlspecialchars($row['product_name']) ?>">
-                        </td>
-                        <td>
-                          <p class="text-sm mb-0"><?= htmlspecialchars($row['category']) ?></p>
-                        </td>
-                        <td>
-                          <p class="text-sm mb-0"><?= $row['quantity'] ?></p>
-                        </td>
-                        <td>
-                          <input type="number" name="selling_price" class="form-control form-control-sm" step="0.01" value="<?= $row['selling_price'] ?>">
-                        </td>
-                        <td>
-                          <input type="number" name="ordering_price" class="form-control form-control-sm" step="0.01" value="<?= $row['ordering_price'] ?>">
-                        </td>
-                        <td>
-                          <p class="text-sm mb-0"><?= $row['updated_at'] ?></p>
-                        </td>
-                        <td>
-                          <div class="d-flex">
-                            <input type="number" name="reduce_quantity" class="form-control form-control-sm me-1" placeholder="Qty" min="1" style="width: 70px;">
-                            <button type="submit" class="btn btn-sm btn-success me-1">Update</button>
-                          </div>
-                        </td>
-                      </form>
-                    </tr>
-                  <?php endwhile; ?>
-                <?php else: ?>
-                  <tr>
-                    <td colspan="7" class="text-center text-secondary">No inventory items found.</td>
-                  </tr>
-                <?php endif; ?>
-              </tbody>
+  <?php if ($result->num_rows > 0): ?>
+    <?php while($row = $result->fetch_assoc()): ?>
+      <tr>
+        <form action="../actions/update_inventory.php" method="POST" class="align-middle">
+          <input type="hidden" name="product_id" value="<?= $row['id'] ?>">
+          
+          <!-- Product Name -->
+          <td>
+            <input type="text" name="product_name" class="form-control form-control-sm" value="<?= htmlspecialchars($row['product_name']) ?>">
+          </td>
+
+          <!-- Category (read-only) -->
+          <td>
+            <p class="text-sm mb-0"><?= htmlspecialchars($row['category']) ?></p>
+          </td>
+
+          <!-- Current Quantity (read-only) -->
+          <td>
+            <p class="text-sm mb-0"><?= $row['quantity'] ?></p>
+          </td>
+
+          <!-- Selling Price -->
+          <td>
+            <input type="number" name="selling_price" class="form-control form-control-sm" step="0.01" value="<?= $row['selling_price'] ?>">
+          </td>
+
+          <!-- Ordering Price -->
+          <td>
+            <input type="number" name="ordering_price" class="form-control form-control-sm" step="0.01" value="<?= $row['ordering_price'] ?>">
+          </td>
+
+          <!-- Last Updated -->
+          <td>
+            <p class="text-sm mb-0"><?= $row['updated_at'] ?></p>
+          </td>
+
+          <!-- Add/Remove Quantity + Update Button -->
+          <td>
+            <div class="d-flex flex-column flex-md-row gap-1">
+              <input type="number" name="add_quantity" class="form-control form-control-sm" placeholder="+Qty" min="1" style="width: 70px;">
+              <input type="number" name="reduce_quantity" class="form-control form-control-sm" placeholder="-Qty" min="1" style="width: 70px;">
+              <button type="submit" class="btn btn-sm btn-primary">Update</button>
+            </div>
+          </td>
+        </form>
+      </tr>
+    <?php endwhile; ?>
+  <?php else: ?>
+    <tr>
+      <td colspan="7" class="text-center text-secondary">No inventory items found.</td>
+    </tr>
+  <?php endif; ?>
+</tbody>
+
             </table>
+<!-- Inventory Filter and Download Section -->
+<div class="card shadow-sm border-0 mb-4">
+  <div class="card-header pb-0 d-flex justify-content-between align-items-center">
+    <h6 class="mb-0">📦 Filter & Download Inventory Data</h6>
+  </div>
+  <div class="card-body">
+    <form method="GET">
+      <div class="row g-3">
+        <div class="col-md-4">
+          <label for="from" class="form-label">From Date</label>
+          <input type="date" name="from" id="from" class="form-control" value="<?= htmlspecialchars($from) ?>" required>
+        </div>
+        <div class="col-md-4">
+          <label for="to" class="form-label">To Date</label>
+          <input type="date" name="to" id="to" class="form-control" value="<?= htmlspecialchars($to) ?>" required>
+        </div>
+        <div class="col-md-4 d-flex align-items-end gap-2">
+          <button type="submit" class="btn btn-primary w-50">🔍 Filter</button>
+          <?php if ($from && $to): ?>
+            <a href="../actions/download_inventory.php?from=<?= $from ?>&to=<?= $to ?>" 
+               class="btn btn-success w-50">⬇️ Download CSV</a>
+          <?php endif; ?>
+        </div>
+      </div>
+    </form>
+  </div>
+</div>
 
             <!-- Pagination -->
             <nav aria-label="Inventory pagination">
