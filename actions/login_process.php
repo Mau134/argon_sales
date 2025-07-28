@@ -1,6 +1,6 @@
 <?php
 session_start();
-require_once '../includes/db.php'; // Contains DB connection
+require_once '../includes/db.php'; // Contains db connection
 
 if ($_SERVER["REQUEST_METHOD"] == "POST") {
     $email = trim($_POST["email"]);

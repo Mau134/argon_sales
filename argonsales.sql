@@ -4,7 +4,7 @@
 --
 -- Host: 127.0.0.1
 -- Generation Time: Jul 28, 2025 at 07:19 PM
--- Server version: 10.4.32-MariaDB
+-- Server version: 10.4.32-Mariadb
 -- PHP Version: 8.2.12
 
 SET SQL_MODE = "NO_AUTO_VALUE_ON_ZERO";
@@ -35,7 +35,7 @@ CREATE TABLE `deleted_products` (
 -- --------------------------------------------------------
 
 --
--- Table structure for table `inventory`
+-- Table strudbure for table `inventory`
 --
 
 CREATE TABLE `inventory` (
@@ -48,7 +48,7 @@ CREATE TABLE `inventory` (
   `ordering_price` decimal(10,2) DEFAULT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
---
+--db
 -- Dumping data for table `inventory`
 --
 
@@ -63,7 +63,7 @@ INSERT INTO `inventory` (`id`, `product_name`, `category`, `quantity`, `updated_
 -- Table structure for table `records`
 --
 
-CREATE TABLE `records` (
+CREATE TABLE dbecords` (
   `id` int(11) NOT NULL,
   `action` varchar(100) DEFAULT NULL,
   `details` text DEFAULT NULL,
@@ -79,7 +79,7 @@ CREATE TABLE `records` (
 
 CREATE TABLE `sales` (
   `id` int(11) NOT NULL,
-  `product_id` int(11) DEFAULT NULL,
+  `product_iddbint(11) DEFAULT NULL,
   `product_name` varchar(255) DEFAULT NULL,
   `user_id` int(11) DEFAULT NULL,
   `sale_date` timestamp NOT NULL DEFAULT current_timestamp(),
@@ -109,7 +109,7 @@ INSERT INTO `sales` (`id`, `product_id`, `product_name`, `user_id`, `sale_date`,
 
 CREATE TABLE `sales_items` (
   `id` int(11) NOT NULL,
-  `sale_id` int(11) DEFAULT NULL,
+  `sale_id` idb(11) DEFAULT NULL,
   `product_id` int(11) DEFAULT NULL,
   `quantity` int(11) DEFAULT NULL,
   `unit_price` decimal(10,2) DEFAULT NULL
@@ -124,7 +124,7 @@ CREATE TABLE `sales_items` (
 CREATE TABLE `users` (
   `id` int(11) NOT NULL,
   `name` varchar(100) NOT NULL,
-  `role` enum('boss','shopkeeper') NOT NULL,
+  `role` enumdbboss','shopkeeper') NOT NULL,
   `email` varchar(100) DEFAULT NULL,
   `password_hash` varchar(255) DEFAULT NULL,
   `created_at` timestamp NOT NULL DEFAULT current_timestamp()
