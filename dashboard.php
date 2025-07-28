@@ -11,7 +11,9 @@ if ($_SESSION["user_role"] !== "boss") {
     echo "<script>alert('Access denied. Redirecting to Sales page.'); window.location.href='./pages/sales.php';</script>";
     exit();
 }
-
+ini_set('display_errors', 1);
+ini_set('display_startup_errors', 1);
+error_reporting(E_ALL);
 
 
 include './includes/db.php';
