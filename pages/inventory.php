@@ -32,6 +32,10 @@ if ($from && $to) {
     $params[] = $to . " 23:59:59";
 }
 
+$totalInventoryResult = $conn->query("SELECT SUM(quantity) as total_inventory FROM inventory");
+$totalInventory = $totalInventoryResult->fetch_assoc()['total_inventory'] ?? 0;
+
+
 $sql = "SELECT * FROM inventory $where ORDER BY updated_at DESC LIMIT ? OFFSET ?";
 $params[] = $limit;
 $params[] = $offset;
@@ -135,6 +139,21 @@ $totalPages = ceil($totalItems / $limit);
       </div>
     </nav>
     <!-- End Navbar -->
+         <div class="col-lg-2 col-sm-6 mb-4">
+      <div class="card">
+        <div class="card-body p-3">
+          <div class="d-flex">
+            <div class="icon icon-shape bg-gradient-success text-white rounded-circle shadow">
+              <i class="ni ni-box-2"></i>
+            </div>
+            <div class="ms-3">
+              <p class="text-sm mb-0 text-capitalize">Total Inventory</p>
+              <h5 class="mb-0"><?= $totalInventory ?></h5>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
 <div class="container-fluid py-4">
   <div class="row">
     <div class="col-12">
@@ -266,33 +285,18 @@ $totalPages = ceil($totalItems / $limit);
 </tbody>
 
             </table>
-<!-- Inventory Filter and Download Section -->
+<!-- Inventory Download Section -->
 <div class="card shadow-sm border-0 mb-4">
   <div class="card-header pb-0 d-flex justify-content-between align-items-center">
-    <h6 class="mb-0">📦 Filter & Download Inventory Data</h6>
+    <h6 class="mb-0">Download Inventory Data</h6>
   </div>
-  <div class="card-body">
-    <form method="GET">
-      <div class="row g-3">
-        <div class="col-md-4">
-          <label for="from" class="form-label">From Date</label>
-          <input type="date" name="from" id="from" class="form-control" value="<?= htmlspecialchars($from) ?>" required>
-        </div>
-        <div class="col-md-4">
-          <label for="to" class="form-label">To Date</label>
-          <input type="date" name="to" id="to" class="form-control" value="<?= htmlspecialchars($to) ?>" required>
-        </div>
-        <div class="col-md-4 d-flex align-items-end gap-2">
-          <button type="submit" class="btn btn-primary w-50">🔍 Filter</button>
-          <?php if ($from && $to): ?>
-            <a href="../actions/download_inventory.php?from=<?= $from ?>&to=<?= $to ?>" 
-               class="btn btn-success w-50">⬇️ Download CSV</a>
-          <?php endif; ?>
-        </div>
-      </div>
-    </form>
+  <div class="card-body text-center">
+    <a href="../actions/download_inventory.php" class="btn btn-success btn-lg w-27">
+      Download Current Inventory
+    </a>
   </div>
 </div>
+
 
             <!-- Pagination -->
             <nav aria-label="Inventory pagination">
