@@ -1,55 +1,54 @@
 <?php
-include '../includes/db.php';
+session_start();
+require_once '../includes/db.php';
 
 if ($_SERVER["REQUEST_METHOD"] === "POST") {
     $productId = $_POST['product_id'];
-    $price = $_POST['price'];
-    $quantity = $_POST['quantity_sold'];
-    $totalAmount = $price * $quantity;
+    $manualSellingPrice = floatval($_POST['price']);
+    $quantitySold = intval($_POST['quantity_sold']);
 
-    // Step 1: Check current inventory
-    $inventoryCheck = $conn->prepare("SELECT quantity FROM inventory WHERE id = ?");
-    $inventoryCheck->bind_param("i", $productId);
-    $inventoryCheck->execute();
-    $inventoryCheck->bind_result($currentStock);
-    $inventoryCheck->fetch();
-    $inventoryCheck->close();
+    // Fetch system values
+    $stmt = $conn->prepare("SELECT quantity, selling_price, ordering_price FROM inventory WHERE id = ?");
+    $stmt->bind_param("i", $productId);
+    $stmt->execute();
+    $stmt->bind_result($stock, $systemSellingPrice, $orderingPrice);
+    $stmt->fetch();
+    $stmt->close();
 
-    if ($currentStock === null) {
-        // Product not found
-        die("Invalid product ID.");
-    }
-
-    if ($currentStock <= 0) {
-        // Out of stock
+    // ❌ If stock is 0, deny sale
+    if ($stock <= 0) {
         header("Location: ../pages/sales.php?error=out_of_stock");
         exit();
     }
 
-    if ($quantity > $currentStock) {
-        // Not enough stock
+    // ❌ If trying to sell more than in stock, deny
+    if ($stock < $quantitySold) {
         header("Location: ../pages/sales.php?error=not_enough_stock");
         exit();
     }
 
-    // Step 2: Insert sale
-    $stmt = $conn->prepare("INSERT INTO sales (product_id, quantity_sold, total_amount, created_at) VALUES (?, ?, ?, NOW())");
-    $stmt->bind_param("iid", $productId, $quantity, $totalAmount);
-
-    if ($stmt->execute()) {
-        // Step 3: Update inventory
-        $update = $conn->prepare("UPDATE inventory SET quantity = quantity - ? WHERE id = ?");
-        $update->bind_param("ii", $quantity, $productId);
-        $update->execute();
-        $update->close();
-
-        header("Location: ../pages/sales.php?success=1");
+    // ❌ If price entered is too high
+    if ($manualSellingPrice > $systemSellingPrice) {
+        header("Location: ../pages/sales.php?error=price_too_high");
         exit();
-    } else {
-        echo "Error recording sale: " . $stmt->error;
     }
 
+    // ✅ Proceed with sale
+    $totalAmount = $manualSellingPrice * $quantitySold;
+
+    $stmt = $conn->prepare("INSERT INTO sales (product_id, total_amount, quantity_sold, selling_price, ordering_price, created_at) VALUES (?, ?, ?, ?, ?, NOW())");
+    $stmt->bind_param("iiddi", $productId, $totalAmount, $quantitySold, $manualSellingPrice, $orderingPrice);
+    $stmt->execute();
     $stmt->close();
-    $conn->close();
+
+    // ✅ Update stock (no auto delete)
+    $newStock = $stock - $quantitySold;
+    $stmt = $conn->prepare("UPDATE inventory SET quantity = ? WHERE id = ?");
+    $stmt->bind_param("ii", $newStock, $productId);
+    $stmt->execute();
+    $stmt->close();
+
+    header("Location: ../pages/sales.php?success=1");
+    exit();
 }
 ?>

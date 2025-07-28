@@ -1,37 +1,52 @@
 <?php
-include '../includes/db.php';
+require_once '../includes/db.php';
 
-// Validate date inputs
-$from = isset($_GET['from']) ? $_GET['from'] : '';
-$to = isset($_GET['to']) ? $_GET['to'] : '';
-
-if (!$from || !$to) {
-    die("Missing 'from' or 'to' date.");
-}
-
-$from .= " 00:00:00";
-$to .= " 23:59:59";
-
-// Fetch filtered inventory data
-$stmt = $conn->prepare("SELECT product_name, category, quantity, selling_price, ordering_price, updated_at FROM inventory WHERE updated_at BETWEEN ? AND ? ORDER BY updated_at DESC");
-$stmt->bind_param("ss", $from, $to);
-$stmt->execute();
-$result = $stmt->get_result();
-
-// Set headers for CSV download
 header('Content-Type: text/csv');
-header('Content-Disposition: attachment; filename="inventory_' . date('Y-m-d') . '.csv"');
+header('Content-Disposition: attachment; filename="current_inventory.csv"');
 
-// Output CSV content
+// Open output stream
 $output = fopen('php://output', 'w');
 
-// Column headers
-fputcsv($output, ['Product Name', 'Category', 'Quantity', 'Selling Price', 'Ordering Price', 'Updated At']);
+// Output the column headers
+fputcsv($output, [
+    'Product Name',
+    'Category',
+    'Quantity in Stock',
+    'Selling Price (MWK)',
+    'Ordering Price (MWK)',
+    'Stock Value (MWK)'
+]);
 
-// Data rows
+// Fetch inventory where quantity > 0
+$sql = "SELECT product_name, category, quantity, selling_price, ordering_price 
+        FROM inventory 
+        WHERE quantity > 0 
+        ORDER BY product_name ASC";
+
+$result = $conn->query($sql);
+
+// Initialize total value
+$totalInventoryValue = 0;
+
+// Write data rows
 while ($row = $result->fetch_assoc()) {
-    fputcsv($output, $row);
+    $stockValue = $row['quantity'] * $row['ordering_price'];
+    $totalInventoryValue += $stockValue;
+
+    fputcsv($output, [
+        $row['product_name'],
+        $row['category'],
+        $row['quantity'],
+        number_format($row['selling_price'], 2),
+        number_format($row['ordering_price'], 2),
+        number_format($stockValue, 2)
+    ]);
 }
 
+// Add empty row before total
+fputcsv($output, []);
+// Output total row
+fputcsv($output, ['', '', '', '', 'Total Inventory Value:', number_format($totalInventoryValue, 2)]);
+
 fclose($output);
-exit();
+exit;

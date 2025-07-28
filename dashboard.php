@@ -25,17 +25,35 @@ $totalInventory = $totalInventoryResult->fetch_assoc()['total_inventory'] ?? 0;
 
 // Fetch total profit (sales - ordering cost)
 $profitResult = $conn->query("
-    SELECT SUM(s.total_amount - (s.quantity_sold * i.ordering_price)) as total_profit
-    FROM sales s
-    JOIN inventory i ON s.product_id = i.id
+    SELECT 
+        MONTH(created_at) as month,
+        YEAR(created_at) as year,
+        SUM(GREATEST(selling_price - ordering_price, 0) * quantity_sold) AS total_profit
+    FROM sales
+    GROUP BY year, month
+    ORDER BY year, month
 ");
+
 
 $totalProfit = $profitResult->fetch_assoc()['total_profit'] ?? 0;
 
 $currentDate = date('l, d M Y');
 
-// Fetch inventory data for chart and table
-$inventoryQuery = $conn->query("SELECT product_name, category, quantity, selling_price, ordering_price, updated_at FROM inventory ORDER BY updated_at DESC LIMIT 10");
+// Fetch inventory data for chart and table (only actual inventory records)
+$inventoryQuery = $conn->query("
+    SELECT product_name, category, quantity, selling_price, ordering_price, updated_at 
+    FROM inventory 
+    ORDER BY updated_at DESC 
+    LIMIT 10
+");
+
+$inventoryLabels = [];
+$inventoryQuantities = [];
+$inventoryColors = [];
+$inventoryRows = [];
+
+// Clear old data if any (precaution)
+unset($inventoryLabels, $inventoryQuantities, $inventoryColors, $inventoryRows);
 $inventoryLabels = [];
 $inventoryQuantities = [];
 $inventoryColors = [];
@@ -44,23 +62,28 @@ $inventoryRows = [];
 while ($row = $inventoryQuery->fetch_assoc()) {
   $inventoryLabels[] = $row['product_name'];
   $inventoryQuantities[] = $row['quantity'];
-  $inventoryColors[] = $row['quantity'] < 10 ? 'rgba(255, 99, 132, 0.6)' : 'rgba(75, 192, 192, 0.6)'; // Red for low, green for high
+  $inventoryColors[] = $row['quantity'] < 10 ? 'rgba(255, 99, 132, 0.6)' : 'rgba(75, 192, 192, 0.6)';
   $inventoryRows[] = $row;
 }
+
 
 // Get sales data for current month
 $currentMonth = date('Y-m');
 $sql = "
   SELECT 
-    i.product_name,
+    s.product_id,
+    COALESCE(i.product_name, dp.product_name) AS product_name,
     SUM(s.total_amount) AS total_sales,
-    SUM(s.quantity_sold * i.ordering_price) AS total_cost,
-    SUM(s.total_amount - (s.quantity_sold * i.ordering_price)) AS profit
+    SUM(s.quantity_sold * s.ordering_price) AS total_cost,
+    SUM(s.total_amount - (s.quantity_sold * s.ordering_price)) AS profit
   FROM sales s
-  JOIN inventory i ON s.product_id = i.id
+  LEFT JOIN inventory i ON s.product_id = i.id
+  LEFT JOIN deleted_products dp ON s.product_id = dp.product_id
   WHERE DATE_FORMAT(s.created_at, '%Y-%m') = ?
   GROUP BY s.product_id
 ";
+
+
 $stmt = $conn->prepare($sql);
 $stmt->bind_param("s", $currentMonth);
 $stmt->execute();
@@ -383,25 +406,30 @@ $conn->close();
   <script src="../assets/js/plugins/chartjs.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 <script>
-  // Sales chart
-  new Chart(document.getElementById('monthly-sales-chart'), {
-    type: 'line',
-    data: {
-      labels: <?= json_encode($chart_labels) ?>,
-      datasets: [{
-        label: 'Profit (MWK)',
-        data: <?= json_encode($chart_profits) ?>,
-        borderColor: 'rgb(75, 192, 192)',
-        backgroundColor: 'rgba(75, 192, 192, 0.2)',
-        fill: true,
-        tension: 0.4
-      }]
-    },
-    options: {
-      responsive: true,
-      scales: { y: { beginAtZero: true } }
+ new Chart(document.getElementById('monthly-sales-chart'), {
+  type: 'line',
+  data: {
+    labels: <?= json_encode($chart_labels) ?>,
+    datasets: [{
+      label: 'Profit (MWK)',
+      data: <?= json_encode($chart_profits) ?>,
+      borderColor: 'rgb(75, 192, 192)',
+      backgroundColor: 'rgba(75, 192, 192, 0.2)',
+      fill: true,
+      tension: 0.4
+    }]
+  },
+  options: {
+    responsive: true,
+    scales: {
+      y: {
+        beginAtZero: true,
+        min: 0
+      }
     }
-  });
+  }
+});
+
 
   // Inventory chart
   new Chart(document.getElementById('inventoryChart'), {

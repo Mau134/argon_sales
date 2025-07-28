@@ -15,12 +15,15 @@ $salesSql = "
   SELECT 
     s.id, 
     i.product_name, 
-    s.total_amount, 
+    s.total_amount,
+    s.quantity_sold,
+    s.selling_price,
     s.created_at 
   FROM sales s
   JOIN inventory i ON s.product_id = i.id
   WHERE DATE(s.created_at) = CURDATE()
 ";
+
 $salesResult = $conn->query($salesSql);
 
 if (!$salesResult) {
@@ -133,26 +136,51 @@ if (!$salesResult) {
                 <thead>
                   <tr>
                     <th class="text-uppercase text-secondary text-xxs font-weight-bolder opacity-7">Product</th>
-                    <th class="text-uppercase text-secondary text-xxs font-weight-bolder opacity-7">Price (MWK)</th>
+                    <th class="text-uppercase text-secondary text-xxs font-weight-bolder opacity-7">Price Sold (MWK)</th>
                     <th class="text-uppercase text-secondary text-xxs font-weight-bolder opacity-7">Quantity Sold</th>
+                    <th class="text-uppercase text-secondary text-xxs font-weight-bolder opacity-7">Item Price (MWK)</th>
                     <th></th>
                   </tr>
                 </thead>
                 <tbody>
                   <tr>
                     <td>
-                      <select name="product_id" class="form-control form-control-sm" required>
-                        <option value="" disabled selected>Select Product</option>
-                        <?php while ($row = $inventoryResult->fetch_assoc()): ?>
-                          <option value="<?= $row['id'] ?>"><?= htmlspecialchars($row['product_name']) ?></option>
-                        <?php endwhile; ?>
+                      <select name="product_id" id="productSelect" class="form-control form-control-sm" required>
+                      <option value="" disabled selected>Select Product</option>
+                      <?php while ($row = $inventoryResult->fetch_assoc()): ?>
+                        <option value="<?= $row['id'] ?>" data-price="<?= $row['selling_price'] ?>">
+                          <?= htmlspecialchars($row['product_name']) ?>
+                        </option>
+                      <?php endwhile; ?>
+                      <?php if (isset($_GET['error'])): ?>
+  <div class="alert alert-danger">
+    <?php
+      switch ($_GET['error']) {
+        case 'out_of_stock':
+          echo "Sale failed: Product is out of stock.";
+          break;
+        case 'not_enough_stock':
+          echo "Sale failed: Not enough quantity in inventory.";
+          break;
+        case 'price_too_high':
+          echo "Sale failed: Entered price is higher than the system price.";
+          break;
+      }
+    ?>
+  </div>
+<?php endif; ?>
                       </select>
                     </td>
                     <td>
-                      <input type="number" step="0.01" name="price" class="form-control form-control-sm" required>
+                        <!-- Price Sold (user inputs actual selling price) -->
+                        <input type="number" step="0.01" name="price" class="form-control form-control-sm" required>
                     </td>
                     <td>
                       <input type="number" name="quantity_sold" class="form-control form-control-sm" required>
+                    </td>
+                    <td>
+                    <!-- Item Price from inventory (read-only for reference only) -->
+                    <input type="number" step="0.01" id="priceInput" class="form-control form-control-sm" readonly>
                     </td>
                     <td>
                       <button type="submit" class="btn btn-sm btn-success">Record Sale</button>
@@ -191,8 +219,8 @@ if (!$salesResult) {
                 <?php while ($row = $salesResult->fetch_assoc()): ?>
                   <tr>
                     <td><?= htmlspecialchars($row['product_name']) ?></td>
-                    <td>MWK <?= number_format($row['total_amount'], 2) ?></td>
-                    <td>—</td> <!-- Replace with actual quantity if available -->
+                    <td>MWK <?= number_format($row['selling_price'], 2) ?></td>
+                    <td><?= $row['quantity_sold'] ?></td>
                     <td>MWK <?= number_format($row['total_amount'], 2) ?></td>
                     <td><?= date('H:i', strtotime($row['created_at'])) ?></td>
                   </tr>
@@ -230,6 +258,26 @@ if (!$salesResult) {
   <script async defer src="https://buttons.github.io/buttons.js"></script>
   <!-- Control Center for Soft Dashboard: parallax effects, scripts for the example pages etc -->
   <script src="../assets/js/argon-dashboard.min.js?v=2.1.0"></script>
+  <script>
+  document.getElementById('productSelect').addEventListener('change', function () {
+    const selectedOption = this.options[this.selectedIndex];
+    const price = selectedOption.getAttribute('data-price');
+    document.getElementById('priceInput').value = price;
+  });
+</script>
+<script>
+document.querySelector('form').addEventListener('submit', function(e) {
+  const systemPrice = parseFloat(document.getElementById('priceInput').value);
+  const userPrice = parseFloat(document.querySelector('input[name="price"]').value);
+
+  if (userPrice > systemPrice) {
+    alert("The entered price is higher than the system price. Sale not allowed.");
+    e.preventDefault();
+  }
+});
+</script>
+
+
 </body>
 
 </html>
