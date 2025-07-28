@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Host: 127.0.0.1
--- Generation Time: Jul 23, 2025 at 06:27 PM
+-- Generation Time: Jul 28, 2025 at 07:19 PM
 -- Server version: 10.4.32-MariaDB
 -- PHP Version: 8.2.12
 
@@ -20,6 +20,17 @@ SET time_zone = "+00:00";
 --
 -- Database: `argonsales`
 --
+
+-- --------------------------------------------------------
+
+--
+-- Table structure for table `deleted_products`
+--
+
+CREATE TABLE `deleted_products` (
+  `product_id` int(11) NOT NULL,
+  `product_name` varchar(255) DEFAULT NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 -- --------------------------------------------------------
 
@@ -42,14 +53,9 @@ CREATE TABLE `inventory` (
 --
 
 INSERT INTO `inventory` (`id`, `product_name`, `category`, `quantity`, `updated_at`, `selling_price`, `ordering_price`) VALUES
-(6, 'Golf Shirt', 'Clothes', 17, '2025-07-13 18:09:27', 40000.00, 20000.00),
-(7, 'Casio Gold', 'Watch', 7, '2025-07-16 14:40:59', 65000.00, 40000.00),
-(8, 'Mens blue suit size 23', 'Suits', 3, '2025-07-12 18:22:17', 250000.00, 180000.00),
-(9, 'Mens blue suit size 23', 'Suits', 8, '2025-07-12 18:20:09', 260000.00, 180000.00),
-(10, 'Casio Black', 'Watch', 6, '2025-07-13 17:34:28', 85000.00, 40000.00),
-(11, 'Jordan 23', 'shoes', 18, '2025-07-13 18:08:04', 200000.00, 160000.00),
-(13, 'Gucci Handbag', 'Bag', 5, '2025-07-21 15:02:24', 60000.00, 24000.00),
-(14, 'Yeezy Slides', 'Shoes', 15, '2025-07-20 13:12:40', 35000.00, 80000.00);
+(8, 'Mens blue suit size 23', 'Suits', 23, '2025-07-28 10:57:08', 250000.00, 180000.00),
+(15, 'Gucci Handbag', 'Bag', 59, '2025-07-28 16:16:35', 55000.00, 34000.00),
+(17, 'Golf Shirt', 'Clothes', 0, '2025-07-28 16:40:55', 60000.00, 20000.00);
 
 -- --------------------------------------------------------
 
@@ -73,29 +79,27 @@ CREATE TABLE `records` (
 
 CREATE TABLE `sales` (
   `id` int(11) NOT NULL,
-  `product_id` int(11) NOT NULL,
+  `product_id` int(11) DEFAULT NULL,
+  `product_name` varchar(255) DEFAULT NULL,
   `user_id` int(11) DEFAULT NULL,
   `sale_date` timestamp NOT NULL DEFAULT current_timestamp(),
   `total_amount` decimal(10,2) DEFAULT NULL,
   `created_at` timestamp NOT NULL DEFAULT current_timestamp(),
-  `quantity_sold` int(11) DEFAULT 1
+  `quantity_sold` int(11) DEFAULT 1,
+  `selling_price` decimal(10,2) DEFAULT NULL,
+  `ordering_price` decimal(10,2) DEFAULT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 --
 -- Dumping data for table `sales`
 --
 
-INSERT INTO `sales` (`id`, `product_id`, `user_id`, `sale_date`, `total_amount`, `created_at`, `quantity_sold`) VALUES
-(1, 7, NULL, '2025-07-11 03:38:38', 1350000.00, '2025-07-11 03:38:38', 1),
-(2, 7, NULL, '2025-07-11 03:44:45', 65000.00, '2025-07-11 03:44:45', 1),
-(3, 7, NULL, '2025-07-12 18:21:41', 160000.00, '2025-07-12 18:21:41', 1),
-(4, 8, NULL, '2025-07-12 18:22:17', 500000.00, '2025-07-12 18:22:17', 1),
-(5, 6, NULL, '2025-07-12 18:43:36', 300.00, '2025-07-12 18:43:36', 1),
-(6, 10, NULL, '2025-07-13 14:35:42', 210000.00, '2025-07-13 14:35:42', 1),
-(7, 6, NULL, '2025-07-13 17:27:46', 60.00, '2025-07-13 17:27:46', 2),
-(8, 10, NULL, '2025-07-13 17:34:28', 40000.00, '2025-07-13 17:34:28', 1),
-(9, 7, NULL, '2025-07-16 14:40:59', 150000.00, '2025-07-16 14:40:59', 3),
-(10, 13, NULL, '2025-07-21 15:02:24', 201000.00, '2025-07-21 15:02:24', 3);
+INSERT INTO `sales` (`id`, `product_id`, `product_name`, `user_id`, `sale_date`, `total_amount`, `created_at`, `quantity_sold`, `selling_price`, `ordering_price`) VALUES
+(38, 8, 'Mens blue suit size 23', NULL, '2025-07-28 10:57:08', 250000.00, '2025-07-28 10:57:08', 1, 250000.00, 180000.00),
+(39, 15, 'Gucci Handbag', NULL, '2025-07-28 16:16:35', 165000.00, '2025-07-28 16:16:35', 3, 55000.00, 34000.00),
+(40, 17, NULL, NULL, '2025-07-28 16:40:15', 240000.00, '2025-07-28 16:40:15', 4, 60000.00, 20000.00),
+(41, 17, NULL, NULL, '2025-07-28 16:40:37', 720000.00, '2025-07-28 16:40:37', 12, 60000.00, 20000.00),
+(42, 17, NULL, NULL, '2025-07-28 16:40:55', 240000.00, '2025-07-28 16:40:55', 4, 60000.00, 20000.00);
 
 -- --------------------------------------------------------
 
@@ -137,6 +141,12 @@ INSERT INTO `users` (`id`, `name`, `role`, `email`, `password_hash`, `created_at
 --
 -- Indexes for dumped tables
 --
+
+--
+-- Indexes for table `deleted_products`
+--
+ALTER TABLE `deleted_products`
+  ADD PRIMARY KEY (`product_id`);
 
 --
 -- Indexes for table `inventory`
@@ -182,7 +192,7 @@ ALTER TABLE `users`
 -- AUTO_INCREMENT for table `inventory`
 --
 ALTER TABLE `inventory`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=15;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=18;
 
 --
 -- AUTO_INCREMENT for table `records`
@@ -194,7 +204,7 @@ ALTER TABLE `records`
 -- AUTO_INCREMENT for table `sales`
 --
 ALTER TABLE `sales`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=11;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=43;
 
 --
 -- AUTO_INCREMENT for table `sales_items`
@@ -222,7 +232,7 @@ ALTER TABLE `records`
 -- Constraints for table `sales`
 --
 ALTER TABLE `sales`
-  ADD CONSTRAINT `fk_product_id` FOREIGN KEY (`product_id`) REFERENCES `inventory` (`id`),
+  ADD CONSTRAINT `fk_product_id` FOREIGN KEY (`product_id`) REFERENCES `inventory` (`id`) ON DELETE SET NULL,
   ADD CONSTRAINT `sales_ibfk_1` FOREIGN KEY (`user_id`) REFERENCES `users` (`id`);
 
 --
