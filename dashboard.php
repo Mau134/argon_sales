@@ -37,6 +37,23 @@ $profitResult = $conn->query("
 
 $totalProfit = $profitResult->fetch_assoc()['total_profit'] ?? 0;
 
+// Override total profit to only include current month
+$currentYear = date('Y');
+$currentMonthNum = date('m');
+
+$monthlyProfitResult = $conn->prepare("
+    SELECT 
+        SUM(GREATEST(selling_price - ordering_price, 0) * quantity_sold) AS monthly_profit
+    FROM sales
+    WHERE YEAR(created_at) = ? AND MONTH(created_at) = ?
+");
+
+$monthlyProfitResult->bind_param("ii", $currentYear, $currentMonthNum);
+$monthlyProfitResult->execute();
+$monthlyProfitData = $monthlyProfitResult->get_result()->fetch_assoc();
+$totalProfit = $monthlyProfitData['monthly_profit'] ?? 0;
+
+
 $currentDate = date('l, d M Y');
 
 // Fetch inventory data for chart and table (only actual inventory records)
