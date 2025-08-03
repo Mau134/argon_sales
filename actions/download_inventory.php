@@ -30,7 +30,8 @@ $totalInventoryValue = 0;
 
 // Write data rows
 while ($row = $result->fetch_assoc()) {
-    $stockValue = $row['quantity'] * $row['ordering_price'];
+    // ✅ Use selling price to calculate stock value
+    $stockValue = $row['quantity'] * $row['selling_price'];
     $totalInventoryValue += $stockValue;
 
     fputcsv($output, [
